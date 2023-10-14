@@ -157,7 +157,11 @@ function startScan() {
 
         bluetoothle.requestPermissionBtScan(requestscanSuccess, handlescanFail);
 
-        bluetoothle.startScan(startScanSuccess, handleError, { services: [] });
+        // 180D     HEARTRATE
+        // 180F     BATTERY
+        bluetoothle.startScan(startScanSuccess, handleError, { services: ["180D", "180F"] });
+
+       //bluetoothle.discover(startScanSuccess, handleError, { services: [] });
     }
 }
 
@@ -190,9 +194,27 @@ function startScanSuccess(result) {
             log('FOUND DEVICE:');
             log(result);
             foundDevices.push(result);
-            addDevice(result.name, result.address);
+            
+            //  https://stackoverflow.com/questions/75181375/can-a-ble-peripheral-read-the-central-name-before-connection
+            // try to connect the device to get its name
+           // connectDevice(result.address);
+
+            addDevice(result.services, result.address);
         }
     }
+}
+
+function connectDevice(address) {
+    bluetoothle.connect(connectSuccess, connectFail, {"address": address});
+
+}
+
+function connectSuccess(status) {
+    alert(status);
+} 
+
+function connectFail(status) {
+
 }
 
 function retrieveConnectedSuccess(result) {
@@ -201,8 +223,9 @@ function retrieveConnectedSuccess(result) {
     log(result);
 
     result.forEach(function (device) {
-
-        addDevice(device.name, device.address);
+        
+        //if (device.name != null)
+            addDevice(result.services, result.address);
 
     });
 }
@@ -386,6 +409,7 @@ function servicesSuccess(result) {
         });
     }
 
+    /*
     if (result.status === "services") {
 
         result.services.forEach(function (service) {
@@ -400,6 +424,7 @@ function servicesSuccess(result) {
         });
 
     }
+    */
 }
 
 function characteristicsSuccess(result) {
